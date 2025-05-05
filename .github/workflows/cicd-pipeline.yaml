@@ -21,4 +21,6 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: | # Script yang akan dijalankan di server remote
             echo "Berhasil terhubung ke server"
+            cd /home/FWM/CICD-Database
+            echo "Berhasil masuk ke folder CICD-Database"
       
