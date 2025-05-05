@@ -23,4 +23,5 @@ jobs:
             echo "Berhasil terhubung ke server"
             cd /home/FWM/CICD-Database
             echo "Berhasil masuk ke folder CICD-Database"
-            ls
+            docker compose up -d
+            echo "Berhasil menjalankan docker compose"
