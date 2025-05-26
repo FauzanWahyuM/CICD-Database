@@ -1,0 +1,32 @@
+name: CD Example Production
+
+on:
+  push:
+    branches:  
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Checkout ke repository code yang kita gunakan
+
+      - name: SSH connect
+        uses: appleboy/ssh-action@v1 # Menggunakan action SSH untuk menghubungkan ke server remote
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: | # Script yang akan dijalankan di server remote
+            echo "Berhasil terhubung ke server"
+            if [ ! -d "/home/FWM/CD-Prod" ]; then
+              echo "Folder CD-Prod tidak ditemukan, membuat folder baru"
+              mkdir -p /home/FWM/CD-Prod
+            else
+              echo "Folder CD-Prod sudah ada"
+              cd /home/FWM/CD-Prod
+            fi
+            echo "Berhasil masuk ke folder CD-Prod"
+            docker compose up -d 
+            echo "Berhasil menjalankan docker compose"
