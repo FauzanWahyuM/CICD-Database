@@ -37,7 +37,7 @@ jobs:
 
               git pull origin main
             else
-              echo "📥 Cloning repo for the first time..."
+              echo "📥 Cloning repo for the first time "
               git clone https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git .
             fi
 
