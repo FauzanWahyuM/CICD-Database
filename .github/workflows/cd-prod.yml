@@ -26,15 +26,14 @@ jobs:
             else
               echo "Folder CD-Prod sudah ada"
               cd /home/FWM/CD-Prod
+              sudo chown -R big-task:big-task CD-Prod
             fi
             echo "Berhasil masuk ke folder CD-Prod"
             
             if [ -d ".git" ]; then
               echo "📁 Repo exists, pulling latest changes..."
-
               # Update remote dengan token agar pull tidak butuh login
               git remote set-url origin https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git
-
               git pull origin main
             else
               echo "📥 Cloning repo for the first time "
