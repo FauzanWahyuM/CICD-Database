@@ -1,27 +1,27 @@
-# name: CICD Database Dev to Prod
+name: CICD Database Dev to Prod
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   db_cicd:
-#     name: Database CI/CD
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4 # Checkout ke repository code yang kita gunakan
+jobs:
+  db_cicd:
+    name: Database CI/CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Checkout ke repository code yang kita gunakan
 
-#       - name: SSH connect
-#         uses: appleboy/ssh-action@v1 # Menggunakan action SSH untuk menghubungkan ke server remote
-#         with:
-#           host: ${{ secrets.SERVER_HOST }}
-#           username: ${{ secrets.SERVER_USERNAME }}
-#           password: ${{ secrets.SERVER_PASSWORD }}
-#           script: | # Script yang akan dijalankan di server remote
-#             echo "Berhasil terhubung ke server"
-#             cd /home/FWM/CICD-Database
-#             echo "Berhasil masuk ke folder CICD-Database"
-#             docker compose up -d 
-#             echo "Berhasil menjalankan docker compose"
+      - name: SSH connect
+        uses: appleboy/ssh-action@v1 # Menggunakan action SSH untuk menghubungkan ke server remote
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: | # Script yang akan dijalankan di server remote
+            echo "Berhasil terhubung ke server"
+            cd /home/FWM/CICD-Database
+            echo "Berhasil masuk ke folder CICD-Database"
+            docker compose up -d 
+            echo "Berhasil menjalankan docker compose"

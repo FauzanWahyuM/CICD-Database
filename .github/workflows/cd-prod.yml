@@ -28,5 +28,17 @@ jobs:
               cd /home/FWM/CD-Prod
             fi
             echo "Berhasil masuk ke folder CD-Prod"
-            docker compose up -d 
-            echo "Berhasil menjalankan docker compose"
+            
+            if [ -d ".git" ]; then
+              echo "📁 Repo exists, pulling latest changes..."
+
+              # Update remote dengan token agar pull tidak butuh login
+              git remote set-url origin https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git
+
+              git pull origin main
+            else
+              echo "📥 Cloning repo for the first time..."
+              git clone https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git .
+            fi
+
+            echo "✅ Deployment finished at $(date)"
