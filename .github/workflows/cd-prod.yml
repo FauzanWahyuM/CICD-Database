@@ -1,8 +1,8 @@
-name: CD Example Production
+name: CD Example Production Production
 
 on:
   push:
-    branches:  
+    branches:
       - main
 
 jobs:
@@ -10,34 +10,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Checkout ke repository code yang kita gunakan
+        uses: actions/checkout@v4
 
-      - name: SSH connect
-        uses: appleboy/ssh-action@v1 # Menggunakan action SSH untuk menghubungkan ke server remote
+      - name: SSH connect and Deploy
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          script: | # Script yang akan dijalankan di server remote
-            echo "Berhasil terhubung ke server"
-            if [ ! -d "/home/FWM/CD-Prod" ]; then
-              echo "Folder CD-Prod tidak ditemukan, membuat folder baru"
-              mkdir -p /home/FWM/CD-Prod
+          # Pastikan SSH key dari action ini sudah ditambahkan ke server Anda
+          # Untuk otentikasi SSH ke server, jika menggunakan key daripada password
+          # key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            REMOTE_DIR="/home/FWM/CD-Prod"
+            SERVER_USER="${{ secrets.SERVER_USERNAME }}" # Gunakan username SSH dari secrets
+
+            echo "Berhasil terhubung ke server sebagai $SERVER_USER"
+
+            # 1. Pastikan folder utama ada dan kepemilikannya benar
+            if [ ! -d "$REMOTE_DIR" ]; then
+              echo "Folder $REMOTE_DIR tidak ditemukan, membuat folder baru"
+              # Buat folder dan langsung atur kepemilikan dan izin saat dibuat
+              sudo mkdir -p "$REMOTE_DIR"
+              # Atur kepemilikan folder yang baru dibuat
+              sudo chown -R $SERVER_USER:$SERVER_USER "$REMOTE_DIR"
+              sudo chmod -R u+rwx "$REMOTE_DIR" # Beri izin penuh kepada pemilik
             else
-              echo "Folder CD-Prod sudah ada"
-              cd /home/FWM/CD-Prod
-              sudo chown -R big-task:big-task CD-Prod
+              echo "Folder $REMOTE_DIR sudah ada"
+              # Meskipun folder sudah ada, pastikan kepemilikan dan izinnya benar
+              # Ini penting jika pernah ada kloning sebagai root atau user lain
+              sudo chown -R $SERVER_USER:$SERVER_USER "$REMOTE_DIR"
+              sudo chmod -R u+rwx "$REMOTE_DIR" # Pastikan izin tulis
             fi
+
+            # 2. Masuk ke folder CD-Prod setelah memastikan izinnya benar
+            cd "$REMOTE_DIR" || { echo "Gagal masuk ke $REMOTE_DIR, periksa izinnya!"; exit 1; }
             echo "Berhasil masuk ke folder CD-Prod"
+
+            # 3. Lakukan operasi Git
+            REPO_URL="https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git"
             
             if [ -d ".git" ]; then
               echo "📁 Repo exists, pulling latest changes..."
-              # Update remote dengan token agar pull tidak butuh login
-              git remote set-url origin https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git
+              # Perbarui URL remote jika perlu (misalnya jika PAT berubah)
+              git remote set-url origin "$REPO_URL"
               git pull origin main
             else
-              echo "📥 Cloning repo for the first time "
-              git clone https://${{ secrets.USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.USERNAME }}/CICD-Database.git .
+              echo "📥 Cloning repo for the first time..."
+              git clone "$REPO_URL" .
             fi
 
             echo "✅ Deployment finished at $(date)"
